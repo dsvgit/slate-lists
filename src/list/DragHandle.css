@@ -1,0 +1,26 @@
+.dropLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: green;
+}
+
+.dropLineTop {
+  top: -1px;
+}
+
+.dropLineBottom {
+  bottom: -1px;
+}
+
+.handle {
+  position: absolute;
+  top: 3px;
+  left: -49px;
+  border: 1px solid gray;
+  cursor: grab;
+  background-color: #0177ff;
+  width: 26px;
+  height: 26px;
+}

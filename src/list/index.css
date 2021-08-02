@@ -1,0 +1,31 @@
+* {
+  box-sizing: border-box;
+}
+
+.checkList {
+  list-style: none;
+}
+
+.listItem {
+  position: relative;
+}
+
+.input {
+  left: -25px;
+  top: 7px;
+  position: absolute;
+}
+
+.input input {
+  width: 16px;
+  height: 16px;
+
+  padding: 10px;
+  cursor: pointer;
+}
+
+ol,
+ul {
+  margin: 0;
+  padding-inline-start: 24px;
+}

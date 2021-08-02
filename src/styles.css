@@ -1,0 +1,17 @@
+body {
+  font-size: 20px;
+  margin-left: 28px;
+}
+
+.debug {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  font-size: 13px;
+  word-wrap: none;
+  white-space: nowrap;
+  height: 100vh;
+  overflow: scroll;
+  z-index: 10;
+}
