@@ -6,6 +6,7 @@ import { ELEMENT_UL, ELEMENT_CL } from "./defaults";
 import { DragHandle } from "./DragHandle";
 
 import "./index.css";
+import { useDndBlock } from "@udecode/plate";
 
 const ListContext = createContext();
 
@@ -27,15 +28,19 @@ export const List = (props) => {
 };
 
 export const ListItem = (props) => {
-  const rootRef = useRef();
   const { attributes, children, element } = props;
   const { checked } = element;
   const editor = useSlate();
-  const { listType } = useContext(ListContext);
+  const { listType } = useContext(ListContext) || {};
+
+  // const { dropLine, dragRef, isDragging } = useDndBlock({
+  //   id: element.id,
+  //   blockRef: attributes.ref,
+  // });
 
   return (
-    <li ref={rootRef} className="listItem" {...attributes}>
-      <DragHandle rootRef={rootRef} {...props} />
+    <li className="listItem" {...attributes}>
+      {/*<DragHandle dropLine={dropLine} dragRef={dragRef} {...props} />*/}
       {listType === ELEMENT_CL && (
         <div contentEditable={false} className="input">
           <input

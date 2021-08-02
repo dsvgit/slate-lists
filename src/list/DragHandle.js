@@ -1,21 +1,10 @@
 import React, { Fragment } from "react";
 import cn from "classnames";
-import { useDndBlock } from "@udecode/plate";
 
 import "./DragHandle.css";
 
 export const DragHandle = (props) => {
-  const { element, rootRef } = props;
-
-  console.log(props);
-
-  const { dropLine, dragRef, isDragging } = useDndBlock({
-    id: element.id,
-    blockRef: rootRef,
-    removePreview: true
-  });
-
-  console.log(isDragging);
+  const { element, rootRef, dropLine, dragRef } = props;
 
   return (
     <Fragment>
