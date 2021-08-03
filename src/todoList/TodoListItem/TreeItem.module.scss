@@ -104,6 +104,14 @@
 
 .disableSelection,
 .clone {
+  .Wrapper {
+    padding-left: 0!important;
+  }
+
+  .TreeItem {
+    transform: none!important;
+  }
+
   .Text,
   .Count {
     user-select: none;

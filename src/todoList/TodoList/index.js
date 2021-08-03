@@ -15,18 +15,17 @@ import {
   DragOverlay,
   defaultDropAnimation,
 } from "@dnd-kit/core";
-import { SortableContext } from "@dnd-kit/sortable";
 import {
-  buildTree,
-  flattenTree,
-  getProjection,
-  removeChildrenOf,
-} from "SortableTreeStory/utilities";
-import { arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { Editor, Transforms } from "slate";
+import { useSlateStatic } from "slate-react";
+
+import { getProjection, removeChildrenOf } from "../utilities";
+import { TodoListItemClone } from "todoList/TodoListItem";
 
 import "../index.css";
-import TreeItem from "todoList/TodoListItem/TreeItem";
-import TodoListItem from "todoList/TodoListItem";
 
 export const ListContext = createContext();
 
@@ -74,6 +73,7 @@ const TodoList = (props) => {
           indentationWidth
         )
       : null;
+
   const sensorContext = useRef({
     items: flattenedItems,
     offset: offsetLeft,
@@ -85,6 +85,8 @@ const TodoList = (props) => {
     [flattenedItems]
   );
 
+  const editor = useSlateStatic();
+
   useEffect(() => {
     sensorContext.current = {
       items: flattenedItems,
@@ -92,27 +94,8 @@ const TodoList = (props) => {
     };
   }, [flattenedItems, offsetLeft]);
 
-  const announcements = {
-    onDragStart(id) {
-      return `Picked up ${id}.`;
-    },
-    onDragMove(id, overId) {
-      return getMovementAnnouncement("onDragMove", id, overId);
-    },
-    onDragOver(id, overId) {
-      return getMovementAnnouncement("onDragOver", id, overId);
-    },
-    onDragEnd(id, overId) {
-      return getMovementAnnouncement("onDragEnd", id, overId);
-    },
-    onDragCancel(id) {
-      return `Moving was cancelled. ${id} was dropped in its original position.`;
-    },
-  };
-
   return (
     <DndContext
-      announcements={announcements}
       sensors={sensors}
       collisionDetection={closestCenter}
       measuring={measuring}
@@ -127,7 +110,7 @@ const TodoList = (props) => {
           {createPortal(
             <DragOverlay dropAnimation={dropAnimation}>
               {activeId && activeItem ? (
-                <TodoListItem depth={activeItem.depth} clone />
+                <TodoListItemClone activeItem={activeItem} />
               ) : null}
             </DragOverlay>,
             document.body
@@ -146,12 +129,11 @@ const TodoList = (props) => {
 
     if (activeItem) {
       setCurrentPosition({
-        parentId: activeItem.parentId,
         overId: activeId,
       });
     }
 
-    document.body.style.setProperty("cursor", "grabbing");
+    document.body.classList.add("dragging");
   }
 
   function handleDragMove({ delta }) {
@@ -166,18 +148,35 @@ const TodoList = (props) => {
     resetState();
 
     if (projected && over) {
-      const { depth, parentId } = projected;
-      const clonedItems = JSON.parse(JSON.stringify(element.children));
-      const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
-      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-      const activeTreeItem = clonedItems[activeIndex];
+      const { depth } = projected;
 
-      clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
+      const [entry] = Editor.nodes(editor, {
+        at: [],
+        match: (node) => {
+          return node.id === over.id;
+        },
+      });
 
-      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-      const newItems = buildTree(sortedItems);
+      if (entry) {
+        const [overNode, overPath] = entry;
 
-      // setItems(newItems);
+        Transforms.setNodes(
+          editor,
+          { depth },
+          {
+            at: [],
+            match: (node) => {
+              return node.id === active.id;
+            },
+          }
+        );
+
+        Transforms.moveNodes(editor, {
+          at: [],
+          match: (node) => node.id === active.id,
+          to: overPath,
+        });
+      }
     }
   }
 
@@ -191,60 +190,7 @@ const TodoList = (props) => {
     setOffsetLeft(0);
     setCurrentPosition(null);
 
-    document.body.style.setProperty("cursor", "");
-  }
-
-  function getMovementAnnouncement(eventName, activeId, overId) {
-    if (overId && projected) {
-      if (eventName !== "onDragEnd") {
-        if (
-          currentPosition &&
-          projected.parentId === currentPosition.parentId &&
-          overId === currentPosition.overId
-        ) {
-          return;
-        } else {
-          setCurrentPosition({
-            parentId: projected.parentId,
-            overId,
-          });
-        }
-      }
-
-      const clonedItems = JSON.parse(JSON.stringify(element.children));
-      const overIndex = clonedItems.findIndex(({ id }) => id === overId);
-      const activeIndex = clonedItems.findIndex(({ id }) => id === activeId);
-      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-
-      const previousItem = sortedItems[overIndex - 1];
-
-      let announcement;
-      const movedVerb = eventName === "onDragEnd" ? "dropped" : "moved";
-      const nestedVerb = eventName === "onDragEnd" ? "dropped" : "nested";
-
-      if (!previousItem) {
-        const nextItem = sortedItems[overIndex + 1];
-        announcement = `${activeId} was ${movedVerb} before ${nextItem.id}.`;
-      } else {
-        if (projected.depth > previousItem.depth) {
-          announcement = `${activeId} was ${nestedVerb} under ${previousItem.id}.`;
-        } else {
-          let previousSibling = previousItem;
-          while (previousSibling && projected.depth < previousSibling.depth) {
-            const parentId = previousSibling.parentId;
-            previousSibling = sortedItems.find(({ id }) => id === parentId);
-          }
-
-          if (previousSibling) {
-            announcement = `${activeId} was ${movedVerb} after ${previousSibling.id}.`;
-          }
-        }
-      }
-
-      return announcement;
-    }
-
-    return;
+    document.body.classList.remove("dragging");
   }
 };
 
