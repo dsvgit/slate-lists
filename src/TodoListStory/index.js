@@ -10,7 +10,7 @@ import {
   ELEMENT_PARAGRAPH,
   ELEMENT_H1,
   useStoreEditorValue,
-  useStoreEditorRef,
+  useStoreEditorRef
 } from "@udecode/plate";
 
 import { createElement, makeNodeId, mapSlateDebugValue } from "utils";
@@ -35,7 +35,7 @@ const components = {
   [ELEMENT_H1]: Heading,
   [ELEMENT_PARAGRAPH]: Paragraph,
   [ELEMENT_TODO_LIST]: TodoList,
-  [ELEMENT_TODO_LIST_ITEM]: TodoListItem,
+  [ELEMENT_TODO_LIST_ITEM]: TodoListItem
 };
 
 export default function App() {
@@ -47,7 +47,7 @@ export default function App() {
       createHeadingPlugin(),
       createSoftBreakPlugin(),
       createTodoListPlugin(),
-      createNodeIdPlugin({ idCreator: makeNodeId }),
+      createNodeIdPlugin({ idCreator: makeNodeId })
     ],
     []
   );
@@ -55,7 +55,7 @@ export default function App() {
   const editableProps = useMemo(
     () => ({
       placeholder: "Type something...",
-      spellCheck: true,
+      spellCheck: true
     }),
     []
   );
@@ -112,8 +112,8 @@ export default function App() {
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Order History"),
           { depth: 1 }
-        ),
-      ]),
+        )
+      ])
     ],
     []
   );
@@ -121,9 +121,9 @@ export default function App() {
   const editor = useStoreEditorRef("main");
   const value = useStoreEditorValue("main");
 
-  // const debugValue = useMemo(() => {
-  //   return value && mapSlateDebugValue(value);
-  // }, [value]);
+  const debugValue = useMemo(() => {
+    return value && mapSlateDebugValue(value);
+  }, [value]);
 
   return (
     <div>
@@ -133,6 +133,9 @@ export default function App() {
         editableProps={editableProps}
         initialValue={initialValue}
       />
+      <div className="debug">
+        <pre>{debugValue}</pre>
+      </div>
     </div>
   );
 }
