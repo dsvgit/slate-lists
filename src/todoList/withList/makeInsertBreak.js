@@ -1,6 +1,9 @@
 import { Editor, Range, Transforms } from "slate";
-import { isEmptyNode } from "list/utils";
 import { ELEMENT_PARAGRAPH } from "@udecode/plate";
+
+import { isEmptyNode } from "utils";
+import { isList, isListItem } from "todoList/queries";
+import { moveItemsBack } from "todoList/transforms";
 
 const makeInsertBreak = (editor) => {
   const { insertBreak } = editor;
