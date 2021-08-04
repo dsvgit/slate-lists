@@ -11,6 +11,7 @@ const onKeyDown = (editor) => (e) => {
 
     if (entry) {
       e.preventDefault();
+      e.stopPropagation();
     }
   }
 
