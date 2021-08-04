@@ -4,13 +4,13 @@ import React, { useContext, forwardRef, useMemo } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import classNames from "classnames";
+import { useDndContext } from "@dnd-kit/core";
 
 import { ListContext } from "todoList/TodoList";
 import Handle from "todoList/TodoListItem/Handle";
 import { iOS } from "todoList/utilities";
 
 import styles from "todoList/TodoListItem/TreeItem.module.scss";
-import { useDndContext } from "@dnd-kit/core";
 
 const TodoListItemBase = forwardRef((props, ref) => {
   const {
@@ -121,7 +121,9 @@ export const TodoListItemClone = () => {
     if (!context.activeNode) {
       return;
     }
-    return context.activeNode.outerHTML;
+    const outerHTML = context.activeNode.outerHTML;
+    const result = outerHTML.replaceAll('\n', '<br />'); // line breaks support
+    return result;
   }, [context.activeNode]);
 
   if (!html) {
