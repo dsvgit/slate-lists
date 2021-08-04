@@ -9,7 +9,7 @@ export const moveListNode = (editor, { activeId, overId, depth }) => {
   });
 
   if (entry) {
-    const [overNode, overPath] = entry;
+    const [, overPath] = entry;
 
     Transforms.setNodes(
       editor,
@@ -49,3 +49,7 @@ export const moveItemsBack = (editor, entry) => {
     { at: path }
   );
 };
+
+export const moveItemsDown = () => {
+
+}
