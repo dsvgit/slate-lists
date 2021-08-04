@@ -6,11 +6,11 @@ import { useSortable } from "@dnd-kit/sortable";
 import classNames from "classnames";
 import { useDndContext } from "@dnd-kit/core";
 
-import { ListContext } from "todoList/TodoList";
-import Handle from "todoList/TodoListItem/Handle";
+import { ListContext } from "todoList/elements/TodoList";
+import Handle from "todoList/elements/TodoListItem/Handle";
 import { iOS } from "todoList/utilities";
 
-import styles from "todoList/TodoListItem/TreeItem.module.scss";
+import styles from "todoList/elements/TodoListItem/TreeItem.module.scss";
 
 const TodoListItemBase = forwardRef((props, ref) => {
   const {

@@ -15,8 +15,8 @@ import {
 
 import { createElement, makeNodeId, mapSlateDebugValue } from "utils";
 import { ELEMENT_TODO_LIST, ELEMENT_TODO_LIST_ITEM } from "todoList/defaults";
-import TodoList from "todoList/TodoList";
-import TodoListItem from "todoList/TodoListItem";
+import TodoList from "todoList/elements/TodoList";
+import TodoListItem from "todoList/elements/TodoListItem";
 import { createTodoListPlugin } from "todoList/createTodoListPlugin";
 
 const Heading = (props) => {

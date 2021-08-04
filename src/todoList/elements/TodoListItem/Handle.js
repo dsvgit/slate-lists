@@ -1,4 +1,4 @@
-import styles from "todoList/TodoListItem/TreeItem.module.scss";
+import styles from "todoList/elements/TodoListItem/TreeItem.module.scss";
 
 const Handle = ({ active, className, cursor, style, ...props }) => {
   return (

@@ -21,11 +21,11 @@ import {
 } from "@dnd-kit/sortable";
 import { useSlateStatic } from "slate-react";
 
-import { getProjection, removeChildrenOf } from "../utilities";
-import { TodoListItemClone } from "todoList/TodoListItem";
+import { getProjection, removeChildrenOf } from "todoList/utilities";
+import { TodoListItemClone } from "todoList/elements/TodoListItem";
 import { moveListNode } from "todoList/transforms";
 
-import "../index.css";
+import "todoList/index.css";
 
 export const ListContext = createContext();
 
