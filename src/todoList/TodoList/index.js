@@ -19,11 +19,11 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Editor, Transforms } from "slate";
 import { useSlateStatic } from "slate-react";
 
 import { getProjection, removeChildrenOf } from "../utilities";
 import { TodoListItemClone } from "todoList/TodoListItem";
+import { moveListNode } from "todoList/transforms";
 
 import "../index.css";
 
@@ -150,33 +150,7 @@ const TodoList = (props) => {
     if (projected && over) {
       const { depth } = projected;
 
-      const [entry] = Editor.nodes(editor, {
-        at: [],
-        match: (node) => {
-          return node.id === over.id;
-        },
-      });
-
-      if (entry) {
-        const [overNode, overPath] = entry;
-
-        Transforms.setNodes(
-          editor,
-          { depth },
-          {
-            at: [],
-            match: (node) => {
-              return node.id === active.id;
-            },
-          }
-        );
-
-        Transforms.moveNodes(editor, {
-          at: [],
-          match: (node) => node.id === active.id,
-          to: overPath,
-        });
-      }
+      moveListNode(editor, { activeId: active.id, overId: over.id, depth });
     }
   }
 

@@ -47,3 +47,5 @@ export const useSlateDebugValue = () => {
 
   return [debugValue, setDebugValue];
 };
+
+export const isEmptyNode = (node) => node && Node.string(node) === "";
