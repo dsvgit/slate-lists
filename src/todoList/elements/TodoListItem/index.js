@@ -1,6 +1,11 @@
 import { ReactEditor, useSlateStatic } from "slate-react";
 import { Transforms } from "slate";
-import React, { useContext, forwardRef, useMemo } from "react";
+import React, {
+  useContext,
+  forwardRef,
+  useRef,
+  useEffect,
+} from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import classNames from "classnames";
@@ -48,7 +53,7 @@ const TodoListItemBase = forwardRef((props, ref) => {
             <div contentEditable={false} className="input">
               <input type="checkbox" checked={checked} onChange={onCheck} />
             </div>
-            {children}
+            <div className="listItemContent">{children}</div>
           </div>
         </div>
       </div>
@@ -115,24 +120,21 @@ const TodoListItem = (props) => {
 };
 
 export const TodoListItemClone = () => {
+  const rootRef = useRef(null);
   const context = useDndContext();
 
-  const html = useMemo(() => {
-    if (!context.activeNode) {
-      return;
+  useEffect(() => {
+    if (context.activeNode && rootRef.current) {
+      const clonedElement = context.activeNode.cloneNode(true);
+      const content = clonedElement.querySelector(".listItemContent");
+      content.innerHTML = content.innerHTML.replaceAll("\n", "<br />"); // line breaks support
+      rootRef.current.append(clonedElement);
+    } else {
+      rootRef.current.innerHTML = "";
     }
-    const outerHTML = context.activeNode.outerHTML;
-    const result = outerHTML.replaceAll('\n', '<br />'); // line breaks support
-    return result;
   }, [context.activeNode]);
 
-  if (!html) {
-    return null;
-  }
-
-  return (
-    <div className={styles.clone} dangerouslySetInnerHTML={{ __html: html }} />
-  );
+  return <div ref={rootRef} className={styles.clone} />;
 };
 
 export default TodoListItem;
