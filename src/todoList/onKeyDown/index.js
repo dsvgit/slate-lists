@@ -6,7 +6,15 @@ import { moveItemsBack, moveItemsForward } from "todoList/transforms";
 import { getNextEntry, getPreviousEntry, isListItem } from "todoList/queries";
 
 const onKeyDown = (editor) => (e) => {
-  if (isHotkey(["tab", "shift+tab", "opt+down", "opt+up"], e)) {
+  if (isHotkey(["tab", "shift+tab"], e)) {
+    const [entry] = Editor.nodes(editor, { match: isListItem });
+
+    if (entry) {
+      e.preventDefault();
+    }
+  }
+
+  if (isHotkey(["opt+down", "opt+up", "opt+left", "opt+right"], e)) {
     const [entry] = Editor.nodes(editor, { match: isListItem });
 
     if (entry) {
@@ -15,7 +23,7 @@ const onKeyDown = (editor) => (e) => {
     }
   }
 
-  if (isHotkey("tab", e)) {
+  if (isHotkey(["tab", "opt+right"], e)) {
     const entries = Array.from(Editor.nodes(editor, { match: isListItem }));
 
     const [firstEntry] = entries;
@@ -31,7 +39,7 @@ const onKeyDown = (editor) => (e) => {
     }
   }
 
-  if (isHotkey("shift+tab", e)) {
+  if (isHotkey(["shift+tab", "opt+left"], e)) {
     const entries = Editor.nodes(editor, { match: isListItem });
     for (const entry of entries) {
       moveItemsBack(editor, entry);
