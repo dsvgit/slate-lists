@@ -5,6 +5,7 @@ import React, {
   forwardRef,
   useRef,
   useEffect,
+  useMemo,
 } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
@@ -14,14 +15,17 @@ import { useDndContext } from "@dnd-kit/core";
 import { ListContext } from "todoList/elements/TodoList";
 import Handle from "todoList/elements/TodoListItem/Handle";
 import { iOS } from "todoList/utilities";
+import "./counters.scss";
 
 import styles from "todoList/elements/TodoListItem/TreeItem.module.scss";
+import { listTypes } from "todoList/constants";
 
 const TodoListItemBase = forwardRef((props, ref) => {
   const {
     attributes,
     children,
     depth,
+    counterDepth,
     checked,
     onCheck,
     indentationWidth,
@@ -31,6 +35,8 @@ const TodoListItemBase = forwardRef((props, ref) => {
     disableInteraction,
     handleProps,
     style,
+    resetCounters,
+    listType,
   } = props;
 
   return (
@@ -44,15 +50,26 @@ const TodoListItemBase = forwardRef((props, ref) => {
       ref={wrapperRef}
       style={{
         "--spacing": `${indentationWidth * depth}px`,
+        "--counter": `counter-${counterDepth}`,
+        "--reset-counters": resetCounters,
       }}
     >
       <div className={styles.TreeItem} ref={ref} style={style}>
-        <Handle {...handleProps} />
         <div className={styles.Text}>
           <div className="listItem" {...attributes}>
-            <div contentEditable={false} className="input">
-              <input type="checkbox" checked={checked} onChange={onCheck} />
-            </div>
+            <Handle {...handleProps}>
+              <div className="input">
+                {listType === listTypes.todoList && (
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={onCheck}
+                  />
+                )}
+                {listType === listTypes.numbered && <div className="counter" />}
+                {listType === listTypes.bulleted && <div className="bullet" />}
+              </div>
+            </Handle>
             <div className="listItemContent">{children}</div>
           </div>
         </div>
@@ -66,7 +83,7 @@ const animateLayoutChanges = ({ isSorting, wasSorting }) =>
 
 const TodoListItem = (props) => {
   const { element, children } = props;
-  const { id, depth, checked } = element;
+  const { id, checked, listType } = element;
 
   const editor = useSlateStatic();
 
@@ -75,7 +92,7 @@ const TodoListItem = (props) => {
     Transforms.setNodes(editor, { checked: e.target.checked }, { at: path });
   };
 
-  const { indentationWidth, activeId, projected } =
+  const { indentationWidth, activeId, projected, getCountersToReset } =
     useContext(ListContext) || {};
 
   const {
@@ -96,12 +113,23 @@ const TodoListItem = (props) => {
     transition,
   };
 
+  const context = useDndContext();
+
+  const depth = id === activeId && projected ? projected.depth : element.depth;
+  const counterDepth = useMemo(() => {
+    return depth;
+  }, [context.active, id]);
+  const resetCounters = useMemo(() => {
+    return getCountersToReset(id);
+  }, [context.active, id]);
+
   return (
     <TodoListItemBase
       ref={setDraggableNodeRef}
       wrapperRef={setDroppableNodeRef}
       style={style}
-      depth={id === activeId && projected ? projected.depth : depth}
+      depth={depth}
+      counterDepth={counterDepth}
       indentationWidth={indentationWidth}
       ghost={isDragging}
       disableSelection={iOS}
@@ -113,6 +141,8 @@ const TodoListItem = (props) => {
       attributes={props.attributes}
       checked={checked}
       onCheck={handleCheck}
+      resetCounters={resetCounters}
+      listType={listType}
     >
       {children}
     </TodoListItemBase>

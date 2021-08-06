@@ -1,0 +1,16 @@
+ul {
+  counter-reset: var(--init-counters);
+}
+
+li {
+  counter-reset: var(--reset-counters);
+  counter-increment: var(--counter);
+
+  .counter::before {
+    content: counter(var(--counter)) ".";
+  }
+
+  .bullet::before {
+    content: "•";
+  }
+}

@@ -18,6 +18,9 @@ import { ELEMENT_TODO_LIST, ELEMENT_TODO_LIST_ITEM } from "todoList/defaults";
 import TodoList from "todoList/elements/TodoList";
 import TodoListItem from "todoList/elements/TodoListItem";
 import { createTodoListPlugin } from "todoList/createTodoListPlugin";
+import { listTypes } from "todoList/constants";
+import { Transforms } from "slate";
+import { isListItem } from "todoList/queries";
 
 const Heading = (props) => {
   const { attributes, children } = props;
@@ -36,6 +39,52 @@ const components = {
   [ELEMENT_PARAGRAPH]: Paragraph,
   [ELEMENT_TODO_LIST]: TodoList,
   [ELEMENT_TODO_LIST_ITEM]: TodoListItem,
+};
+
+const Toolbar = ({ editor }) => {
+  return (
+    <div>
+      <button
+        onMouseDown={(e) => {
+          e.preventDefault();
+          console.log("test");
+          Transforms.setNodes(
+            editor,
+            { listType: listTypes.bulleted, checked: false },
+            { match: isListItem }
+          );
+        }}
+      >
+        Bulleted
+      </button>
+      <button
+        onMouseDown={(e) => {
+          e.preventDefault();
+          console.log("test");
+          Transforms.setNodes(
+            editor,
+            { listType: listTypes.numbered, checked: false },
+            { match: isListItem }
+          );
+        }}
+      >
+        Numbered
+      </button>
+      <button
+        onMouseDown={(e) => {
+          e.preventDefault();
+          console.log("test");
+          Transforms.setNodes(
+            editor,
+            { listType: listTypes.todoList },
+            { match: isListItem }
+          );
+        }}
+      >
+        Todo
+      </button>
+    </div>
+  );
 };
 
 export default function App() {
@@ -66,52 +115,52 @@ export default function App() {
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Home"),
-          { depth: 0 }
+          { listType: listTypes.todoList, depth: 0 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Collections"),
-          { depth: 0 }
+          { listType: listTypes.todoList, depth: 0 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Spring"),
-          { depth: 1 }
+          { listType: listTypes.numbered, depth: 1 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Summer"),
-          { depth: 1 }
+          { listType: listTypes.numbered, depth: 1 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Fall"),
-          { depth: 1 }
+          { listType: listTypes.numbered, depth: 1 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Winter"),
-          { depth: 1 }
+          { listType: listTypes.numbered, depth: 1 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "About Us"),
-          { depth: 0 }
+          { listType: listTypes.todoList, depth: 0 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "My Account"),
-          { depth: 0 }
+          { listType: listTypes.todoList, depth: 0 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Addresses"),
-          { depth: 1 }
+          { listType: listTypes.numbered, depth: 1 }
         ),
         createElement(
           ELEMENT_TODO_LIST_ITEM,
           createElement(ELEMENT_PARAGRAPH, "Order History"),
-          { depth: 1 }
+          { listType: listTypes.numbered, depth: 1 }
         ),
       ]),
     ],
@@ -121,18 +170,22 @@ export default function App() {
   const editor = useStoreEditorRef("main");
   const value = useStoreEditorValue("main");
 
-  // const debugValue = useMemo(() => {
-  //   return value && mapSlateDebugValue(value);
-  // }, [value]);
+  const debugValue = useMemo(() => {
+    return value && mapSlateDebugValue(value);
+  }, [value]);
 
   return (
     <div>
+      <Toolbar editor={editor} />
       <Plate
         plugins={plugins}
         components={components}
         editableProps={editableProps}
         initialValue={initialValue}
       />
+      {/*<div className="debug">*/}
+      {/*  <pre>{debugValue}</pre>*/}
+      {/*</div>*/}
     </div>
   );
 }

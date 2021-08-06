@@ -20,6 +20,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useSlateStatic } from "slate-react";
+import { reduce, max, range } from "ramda";
 
 import { getProjection, removeChildrenOf } from "todoList/utilities";
 import { TodoListItemClone } from "todoList/elements/TodoListItem";
@@ -78,7 +79,11 @@ const TodoList = (props) => {
     items: flattenedItems,
     offset: offsetLeft,
   });
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 100, tolerance: 5 },
+    })
+  );
 
   const sortedIds = useMemo(
     () => flattenedItems.map(({ id }) => id),
@@ -94,6 +99,29 @@ const TodoList = (props) => {
     };
   }, [flattenedItems, offsetLeft]);
 
+  const maxDepth = reduce(
+    max,
+    0,
+    element.children.map((item) => item.depth)
+  );
+
+  const getCountersToReset = (id) => {
+    const index = element.children.findIndex((x) => x.id === id);
+
+    if (index !== -1) {
+      const currentDepth = element.children[index].depth;
+      const prevDepth = element.children[index - 1]?.depth || 0;
+
+      if (currentDepth < prevDepth) {
+        return range(currentDepth + 1, maxDepth + 1)
+          .map((x) => `counter-${x}`)
+          .join(" ");
+      }
+    }
+
+    return null;
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -106,7 +134,15 @@ const TodoList = (props) => {
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        <ListContext.Provider value={{ activeId, projected, indentationWidth }}>
+        <ListContext.Provider
+          value={{
+            activeId,
+            projected,
+            indentationWidth,
+            maxDepth,
+            getCountersToReset,
+          }}
+        >
           {createPortal(
             <DragOverlay dropAnimation={dropAnimation}>
               {activeId && activeItem ? (
@@ -115,7 +151,16 @@ const TodoList = (props) => {
             </DragOverlay>,
             document.body
           )}
-          <ul {...attributes}>{children}</ul>
+          <ul
+            style={{
+              "--init-counters": range(0, maxDepth + 1)
+                .map((x) => `counter-${x}`)
+                .join(" "),
+            }}
+            {...attributes}
+          >
+            {children}
+          </ul>
         </ListContext.Provider>
       </SortableContext>
     </DndContext>
