@@ -191,7 +191,12 @@ const TodoList = (props) => {
     if (projected && over) {
       const { depth } = projected;
 
-      moveListNode(editor, { activeId: active.id, overId: over.id, depth });
+      moveListNode(editor, {
+        listItems,
+        activeId: active.id,
+        overId: over.id,
+        depth,
+      });
     }
   }
 
