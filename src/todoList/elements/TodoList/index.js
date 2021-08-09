@@ -22,7 +22,7 @@ import {
 import { useSlateStatic } from "slate-react";
 import { reduce, max, range } from "ramda";
 
-import { getProjection, removeChildrenOf } from "todoList/utilities";
+import { getChildren, getProjection } from "todoList/utilities";
 import { TodoListItemClone } from "todoList/elements/TodoListItem";
 import { moveListNode } from "todoList/transforms";
 
@@ -56,27 +56,25 @@ const TodoList = (props) => {
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [currentPosition, setCurrentPosition] = useState(null);
 
-  const flattenedItems = useMemo(() => {
-    return removeChildrenOf(element.children, activeId ? [activeId] : []);
-  }, [activeId]);
+  const listItems = element.children;
 
-  const activeItem = activeId
-    ? flattenedItems.find(({ id }) => id === activeId)
-    : null;
+  const activeItem = useMemo(
+    () => (activeId ? listItems.find(({ id }) => id === activeId) : null),
+    [activeId, listItems]
+  );
+
+  const activeChildren = useMemo(
+    () => getChildren(listItems, activeId),
+    [activeId, listItems]
+  );
 
   const projected =
     activeId && overId
-      ? getProjection(
-          flattenedItems,
-          activeId,
-          overId,
-          offsetLeft,
-          indentationWidth
-        )
+      ? getProjection(listItems, activeId, overId, offsetLeft, indentationWidth)
       : null;
 
   const sensorContext = useRef({
-    items: flattenedItems,
+    items: listItems,
     offset: offsetLeft,
   });
   const sensors = useSensors(
@@ -85,19 +83,16 @@ const TodoList = (props) => {
     })
   );
 
-  const sortedIds = useMemo(
-    () => flattenedItems.map(({ id }) => id),
-    [flattenedItems]
-  );
+  const sortedIds = useMemo(() => listItems.map(({ id }) => id), [listItems]);
 
   const editor = useSlateStatic();
 
   useEffect(() => {
     sensorContext.current = {
-      items: flattenedItems,
+      items: listItems,
       offset: offsetLeft,
     };
-  }, [flattenedItems, offsetLeft]);
+  }, [listItems, offsetLeft]);
 
   const maxDepth = reduce(
     max,
@@ -141,6 +136,7 @@ const TodoList = (props) => {
             indentationWidth,
             maxDepth,
             getCountersToReset,
+            activeChildren,
           }}
         >
           {createPortal(
@@ -170,7 +166,7 @@ const TodoList = (props) => {
     setActiveId(activeId);
     setOverId(activeId);
 
-    const activeItem = flattenedItems.find(({ id }) => id === activeId);
+    const activeItem = listItems.find(({ id }) => id === activeId);
 
     if (activeItem) {
       setCurrentPosition({

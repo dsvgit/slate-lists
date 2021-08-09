@@ -15,10 +15,10 @@ import { useDndContext } from "@dnd-kit/core";
 import { ListContext } from "todoList/elements/TodoList";
 import Handle from "todoList/elements/TodoListItem/Handle";
 import { iOS } from "todoList/utilities";
-import "./counters.scss";
+import { listTypes } from "todoList/constants";
 
 import styles from "todoList/elements/TodoListItem/TreeItem.module.scss";
-import { listTypes } from "todoList/constants";
+import "./counters.scss";
 
 const TodoListItemBase = forwardRef((props, ref) => {
   const {
@@ -60,11 +60,7 @@ const TodoListItemBase = forwardRef((props, ref) => {
             <Handle {...handleProps}>
               <div className="input">
                 {listType === listTypes.todoList && (
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={onCheck}
-                  />
+                  <input type="checkbox" checked={checked} onChange={onCheck} />
                 )}
                 {listType === listTypes.numbered && <div className="counter" />}
                 {listType === listTypes.bulleted && <div className="bullet" />}
@@ -92,8 +88,13 @@ const TodoListItem = (props) => {
     Transforms.setNodes(editor, { checked: e.target.checked }, { at: path });
   };
 
-  const { indentationWidth, activeId, projected, getCountersToReset } =
-    useContext(ListContext) || {};
+  const {
+    indentationWidth,
+    activeId,
+    projected,
+    getCountersToReset,
+    activeChildren,
+  } = useContext(ListContext) || {};
 
   const {
     attributes,
@@ -123,6 +124,10 @@ const TodoListItem = (props) => {
     return getCountersToReset(id);
   }, [context.active, id]);
 
+  if (activeChildren.includes(element)) {
+    return null;
+  }
+
   return (
     <TodoListItemBase
       ref={setDraggableNodeRef}
@@ -143,6 +148,7 @@ const TodoListItem = (props) => {
       onCheck={handleCheck}
       resetCounters={resetCounters}
       listType={listType}
+      activeChildren={activeChildren}
     >
       {children}
     </TodoListItemBase>

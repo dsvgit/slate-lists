@@ -6,13 +6,13 @@ function getDragDepth(offset, indentationWidth) {
   return Math.round(offset / indentationWidth);
 }
 
-export function getProjection(
+export const getProjection = (
   items,
   activeId,
   overId,
   dragOffset,
   indentationWidth
-) {
+) => {
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
   const activeItem = items[activeItemIndex];
@@ -34,35 +34,42 @@ export function getProjection(
   }
 
   return { depth, maxDepth, minDepth };
-}
+};
 
-function getMaxDepth({ previousItem }) {
+const getMaxDepth = ({ previousItem }) => {
   if (previousItem) {
     return previousItem.depth + 1;
   }
 
   return 0;
-}
+};
 
-function getMinDepth({ nextItem }) {
+const getMinDepth = ({ nextItem }) => {
   if (nextItem) {
     return 0;
   }
 
   return 0;
-}
+};
 
-export function removeChildrenOf(items, ids) {
-  const excludeParentIds = [...ids];
+export const getChildren = (listItems, activeId) => {
+  const children = [];
+  let index = listItems.findIndex((item) => item.id === activeId);
+  const activeItem = listItems[index];
 
-  return items.filter((item) => {
-    if (item.parentId && excludeParentIds.includes(item.parentId)) {
-      if (item.children.length) {
-        excludeParentIds.push(item.id);
-      }
-      return false;
+  if (!activeItem) {
+    return children;
+  }
+
+  while (true) {
+    index++;
+    const item = listItems[index];
+    if (item && item.depth > activeItem.depth) {
+      children.push(item);
+    } else {
+      break;
     }
+  }
 
-    return true;
-  });
-}
+  return children;
+};
