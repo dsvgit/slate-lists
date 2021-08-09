@@ -155,7 +155,7 @@ const TodoListItem = (props) => {
   );
 };
 
-export const TodoListItemClone = () => {
+export const TodoListItemClone = ({ activeChildren }) => {
   const rootRef = useRef(null);
   const context = useDndContext();
 
@@ -170,7 +170,18 @@ export const TodoListItemClone = () => {
     }
   }, [context.activeNode]);
 
-  return <div ref={rootRef} className={styles.clone} />;
+  return (
+    <div
+      ref={rootRef}
+      className={styles.clone}
+      style={{
+        "--children-count":
+          context.activeNode && activeChildren.length
+            ? `"${activeChildren.length}"`
+            : "",
+      }}
+    />
+  );
 };
 
 export default TodoListItem;

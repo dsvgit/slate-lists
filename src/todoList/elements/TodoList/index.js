@@ -142,7 +142,7 @@ const TodoList = (props) => {
           {createPortal(
             <DragOverlay dropAnimation={dropAnimation}>
               {activeId && activeItem ? (
-                <TodoListItemClone activeItem={activeItem} />
+                <TodoListItemClone activeChildren={activeChildren} />
               ) : null}
             </DragOverlay>,
             document.body
