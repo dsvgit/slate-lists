@@ -74,8 +74,10 @@ const TodoListItemBase = forwardRef((props, ref) => {
   );
 });
 
-const animateLayoutChanges = ({ isSorting, wasSorting }) =>
-  isSorting || wasSorting ? false : true;
+const animateLayoutChanges = ({ isSorting, wasSorting }) => {
+  return false;
+  // return isSorting || wasSorting ? false : true;
+};
 
 const TodoListItem = (props) => {
   const { element, children } = props;
@@ -177,7 +179,7 @@ export const TodoListItemClone = ({ activeChildren }) => {
       style={{
         "--children-count":
           context.activeNode && activeChildren.length
-            ? `"${activeChildren.length}"`
+            ? `"${activeChildren.length + 1}"`
             : "",
       }}
     />
