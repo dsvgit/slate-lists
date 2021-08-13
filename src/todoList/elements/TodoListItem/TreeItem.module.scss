@@ -95,9 +95,8 @@
   }
 }
 
-.disableSelection,
-.clone {
-  .Wrapper {
+.disableSelection {
+  &.Wrapper {
     padding-left: 0 !important;
   }
 
