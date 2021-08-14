@@ -47,14 +47,20 @@ const measuring = {
   },
 };
 
+const adjustTranslate = ({ transform }) => {
+  return {
+    ...transform,
+    y: transform.y - 4,
+  };
+};
+
 const TodoList = (props) => {
-  const indentationWidth = 20;
+  const indentationWidth = 30;
   const { attributes, children, element } = props;
 
   const [activeId, setActiveId] = useState(null);
   const [overId, setOverId] = useState(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [currentPosition, setCurrentPosition] = useState(null);
 
   const listItems = element.children;
 
@@ -122,6 +128,7 @@ const TodoList = (props) => {
       sensors={sensors}
       collisionDetection={closestCenter}
       measuring={measuring}
+      modifiers={[adjustTranslate]}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       onDragOver={handleDragOver}
@@ -149,6 +156,7 @@ const TodoList = (props) => {
           )}
           <ul
             style={{
+              maxWidth: 500,
               "--init-counters": range(0, maxDepth + 1)
                 .map((x) => `counter-${x}`)
                 .join(" "),
@@ -162,17 +170,11 @@ const TodoList = (props) => {
     </DndContext>
   );
 
-  function handleDragStart({ active: { id: activeId } }) {
+  function handleDragStart({ active }) {
+    const activeId = active.id;
+
     setActiveId(activeId);
     setOverId(activeId);
-
-    const activeItem = listItems.find(({ id }) => id === activeId);
-
-    if (activeItem) {
-      setCurrentPosition({
-        overId: activeId,
-      });
-    }
 
     document.body.classList.add("dragging");
   }
@@ -208,7 +210,6 @@ const TodoList = (props) => {
     setOverId(null);
     setActiveId(null);
     setOffsetLeft(0);
-    setCurrentPosition(null);
 
     document.body.classList.remove("dragging");
   }

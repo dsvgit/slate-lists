@@ -7,12 +7,16 @@ function getDragDepth(offset, indentationWidth) {
 }
 
 export const getProjection = (
-  items,
+  listItems,
   activeId,
   overId,
   dragOffset,
   indentationWidth
 ) => {
+  const children = getChildren(listItems, activeId);
+  const items = listItems.filter(
+    (item) => !children.map((item) => item.id).includes(item.id)
+  );
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
   const activeItem = items[activeItemIndex];
@@ -46,30 +50,46 @@ const getMaxDepth = ({ previousItem }) => {
 
 const getMinDepth = ({ nextItem }) => {
   if (nextItem) {
-    return 0;
+    return nextItem.depth;
   }
 
   return 0;
 };
 
-export const getChildren = (listItems, activeId) => {
+export const getChildren = (listItems, itemId) => {
   const children = [];
-  let index = listItems.findIndex((item) => item.id === activeId);
-  const activeItem = listItems[index];
+  let index = listItems.findIndex((item) => item.id === itemId);
+  const targetItem = listItems[index];
 
-  if (!activeItem) {
+  if (!targetItem) {
     return children;
   }
 
   while (true) {
     index++;
     const item = listItems[index];
-    if (item && item.depth > activeItem.depth) {
+    if (item && item.depth > targetItem.depth) {
       children.push(item);
     } else {
-      break;
+      return children;
     }
   }
+};
 
-  return children;
+export const getParentIndex = (listItems, itemId) => {
+  let index = listItems.findIndex((item) => item.id === itemId);
+  const targetItem = listItems[index];
+
+  while (true) {
+    index--;
+
+    if (index < 0) {
+      return null;
+    }
+
+    const item = listItems[index];
+    if (item && item.depth < targetItem.depth) {
+      return index;
+    }
+  }
 };

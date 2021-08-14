@@ -44,6 +44,7 @@ const TodoListItemBase = forwardRef((props, ref) => {
       className={classNames(
         styles.Wrapper,
         ghost && styles.ghost,
+        styles.indicator,
         disableSelection && styles.disableSelection,
         disableInteraction && styles.disableInteraction
       )}
