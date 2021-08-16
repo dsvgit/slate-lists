@@ -1,31 +1,22 @@
 import { ReactEditor, useSlateStatic } from "slate-react";
 import { Transforms } from "slate";
-import React, {
-  useContext,
-  forwardRef,
-  useRef,
-  useEffect,
-  useMemo,
-} from "react";
+import React, { useContext, forwardRef, useRef, useEffect } from "react";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import classNames from "classnames";
 import { useDndContext } from "@dnd-kit/core";
 
 import { ListContext } from "todoList/elements/TodoList";
-import Handle from "todoList/elements/TodoListItem/Handle";
 import { iOS } from "todoList/utilities";
 import { listTypes } from "todoList/constants";
 
-import styles from "todoList/elements/TodoListItem/TreeItem.module.scss";
-import "./counters.scss";
+import styles from "./index.module.scss";
 
 const TodoListItemBase = forwardRef((props, ref) => {
   const {
     attributes,
     children,
     depth,
-    counterDepth,
     checked,
     onCheck,
     indentationWidth,
@@ -35,14 +26,14 @@ const TodoListItemBase = forwardRef((props, ref) => {
     disableInteraction,
     handleProps,
     style,
-    resetCounters,
     listType,
+    index,
   } = props;
 
   return (
     <li
       className={classNames(
-        styles.Wrapper,
+        styles.wrapper,
         ghost && styles.ghost,
         styles.indicator,
         disableSelection && styles.disableSelection,
@@ -51,24 +42,34 @@ const TodoListItemBase = forwardRef((props, ref) => {
       ref={wrapperRef}
       style={{
         "--spacing": `${indentationWidth * depth}px`,
-        "--counter": `counter-${counterDepth}`,
-        "--reset-counters": resetCounters,
+        "--counter-content": `"${index}."`,
       }}
     >
-      <div className={styles.TreeItem} ref={ref} style={style}>
-        <div className={styles.Text}>
-          <div className="listItem" {...attributes}>
-            <Handle {...handleProps}>
-              <div className="input">
-                {listType === listTypes.todoList && (
-                  <input type="checkbox" checked={checked} onChange={onCheck} />
-                )}
-                {listType === listTypes.numbered && <div className="counter" />}
-                {listType === listTypes.bulleted && <div className="bullet" />}
-              </div>
-            </Handle>
-            <div className="listItemContent">{children}</div>
+      <div className={styles.treeItem} ref={ref} style={style}>
+        <div className={styles.text} {...attributes}>
+          <div
+            contentEditable={false}
+            {...handleProps}
+            className={styles.handle}
+          >
+            {listType === listTypes.todoList && (
+              <input
+                {...handleProps}
+                className={styles.checkbox}
+                type="checkbox"
+                checked={checked}
+                onChange={onCheck}
+              />
+            )}
+            {listType === listTypes.numbered && (
+              <div className={styles.counter} />
+            )}
+            {listType === listTypes.bulleted && (
+              <div className={styles.bullet} />
+            )}
           </div>
+
+          <div data--item-content={true}>{children}</div>
         </div>
       </div>
     </li>
@@ -91,13 +92,9 @@ const TodoListItem = (props) => {
     Transforms.setNodes(editor, { checked: e.target.checked }, { at: path });
   };
 
-  const {
-    indentationWidth,
-    activeId,
-    projected,
-    getCountersToReset,
-    activeChildren,
-  } = useContext(ListContext) || {};
+  const { indentationWidth, activeId, projected, activeChildren, indexes } =
+    useContext(ListContext) || {};
+  const index = indexes[id];
 
   const {
     attributes,
@@ -117,15 +114,7 @@ const TodoListItem = (props) => {
     transition,
   };
 
-  const context = useDndContext();
-
   const depth = id === activeId && projected ? projected.depth : element.depth;
-  const counterDepth = useMemo(() => {
-    return depth;
-  }, [context.active, id]);
-  const resetCounters = useMemo(() => {
-    return getCountersToReset(id);
-  }, [context.active, id]);
 
   if (activeChildren.includes(element)) {
     return null;
@@ -137,7 +126,6 @@ const TodoListItem = (props) => {
       wrapperRef={setDroppableNodeRef}
       style={style}
       depth={depth}
-      counterDepth={counterDepth}
       indentationWidth={indentationWidth}
       ghost={isDragging}
       disableSelection={iOS}
@@ -149,23 +137,24 @@ const TodoListItem = (props) => {
       attributes={props.attributes}
       checked={checked}
       onCheck={handleCheck}
-      resetCounters={resetCounters}
       listType={listType}
-      activeChildren={activeChildren}
+      index={index}
     >
       {children}
     </TodoListItemBase>
   );
 };
 
-export const TodoListItemClone = ({ activeChildren }) => {
+export const TodoListItemClone = () => {
   const rootRef = useRef(null);
   const context = useDndContext();
+
+  const { activeChildren } = useContext(ListContext) || {};
 
   useEffect(() => {
     if (context.activeNode && rootRef.current) {
       const clonedElement = context.activeNode.cloneNode(true);
-      const content = clonedElement.querySelector(".listItemContent");
+      const content = clonedElement.querySelector("[data--item-content]");
       content.innerHTML = content.innerHTML.replaceAll("\n", "<br />"); // line breaks support
       rootRef.current.append(clonedElement);
     } else {

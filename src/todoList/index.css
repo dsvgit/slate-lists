@@ -2,33 +2,6 @@
   box-sizing: border-box;
 }
 
-.checkList {
-  list-style: none;
-}
-
-.listItem {
-  padding-left: 22px;
-  position: relative;
-}
-
-.listItem p {
-  margin: 6px 0;
-}
-
-.input {
-  left: -1px;
-  top: 0px;
-  position: absolute;
-}
-
-.input input {
-  width: 14px;
-  height: 14px;
-
-  padding: 10px;
-  cursor: pointer;
-}
-
 ol,
 ul {
   margin: 0;

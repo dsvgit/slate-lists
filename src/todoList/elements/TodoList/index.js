@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -20,9 +14,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useSlateStatic } from "slate-react";
-import { reduce, max, range } from "ramda";
 
-import { getChildren, getProjection } from "todoList/utilities";
+import { getChildren, getIndexes, getProjection } from "todoList/utilities";
 import { TodoListItemClone } from "todoList/elements/TodoListItem";
 import { moveListNode } from "todoList/transforms";
 
@@ -50,7 +43,7 @@ const measuring = {
 const adjustTranslate = ({ transform }) => {
   return {
     ...transform,
-    y: transform.y - 4,
+    y: transform.y - 10,
   };
 };
 
@@ -63,6 +56,8 @@ const TodoList = (props) => {
   const [offsetLeft, setOffsetLeft] = useState(0);
 
   const listItems = element.children;
+  const indexes = useMemo(() => getIndexes(listItems), [listItems]);
+  const ids = useMemo(() => listItems.map((item) => item.id), [listItems]);
 
   const activeItem = useMemo(
     () => (activeId ? listItems.find(({ id }) => id === activeId) : null),
@@ -79,49 +74,13 @@ const TodoList = (props) => {
       ? getProjection(listItems, activeId, overId, offsetLeft, indentationWidth)
       : null;
 
-  const sensorContext = useRef({
-    items: listItems,
-    offset: offsetLeft,
-  });
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { delay: 100, tolerance: 5 },
     })
   );
 
-  const sortedIds = useMemo(() => listItems.map(({ id }) => id), [listItems]);
-
   const editor = useSlateStatic();
-
-  useEffect(() => {
-    sensorContext.current = {
-      items: listItems,
-      offset: offsetLeft,
-    };
-  }, [listItems, offsetLeft]);
-
-  const maxDepth = reduce(
-    max,
-    0,
-    element.children.map((item) => item.depth)
-  );
-
-  const getCountersToReset = (id) => {
-    const index = element.children.findIndex((x) => x.id === id);
-
-    if (index !== -1) {
-      const currentDepth = element.children[index].depth;
-      const prevDepth = element.children[index - 1]?.depth || 0;
-
-      if (currentDepth < prevDepth) {
-        return range(currentDepth + 1, maxDepth + 1)
-          .map((x) => `counter-${x}`)
-          .join(" ");
-      }
-    }
-
-    return null;
-  };
 
   return (
     <DndContext
@@ -135,31 +94,25 @@ const TodoList = (props) => {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ListContext.Provider
           value={{
             activeId,
             projected,
             indentationWidth,
-            maxDepth,
-            getCountersToReset,
             activeChildren,
+            indexes,
           }}
         >
           {createPortal(
             <DragOverlay dropAnimation={dropAnimation}>
-              {activeId && activeItem ? (
-                <TodoListItemClone activeChildren={activeChildren} />
-              ) : null}
+              {activeId && activeItem ? <TodoListItemClone /> : null}
             </DragOverlay>,
             document.body
           )}
           <ul
             style={{
               maxWidth: 500,
-              "--init-counters": range(0, maxDepth + 1)
-                .map((x) => `counter-${x}`)
-                .join(" "),
             }}
             {...attributes}
           >

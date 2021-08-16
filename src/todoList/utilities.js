@@ -1,4 +1,6 @@
 import { arrayMove } from "@dnd-kit/sortable";
+import { max, reduce } from "ramda";
+import { listTypes } from "todoList/constants";
 
 export const iOS = /iPad|iPhone|iPod/.test(navigator.platform);
 
@@ -92,4 +94,32 @@ export const getParentIndex = (listItems, itemId) => {
       return index;
     }
   }
+};
+
+const getMax = (array) => reduce(max, 0, array);
+
+export const getIndexes = (listItems) => {
+  const maxDepth = getMax(listItems.map((item) => item.depth));
+
+  const counters = {};
+  const indexes = {};
+
+  for (const item of listItems) {
+    const { id, depth, listType } = item;
+
+    if (counters[depth] == null) {
+      counters[depth] = 0;
+    }
+
+    for (let i = depth + 1; i <= maxDepth; i++) {
+      counters[i] = 0;
+    }
+
+    if (listType === listTypes.numbered) {
+      counters[depth]++;
+      indexes[id] = counters[depth];
+    }
+  }
+
+  return indexes;
 };
